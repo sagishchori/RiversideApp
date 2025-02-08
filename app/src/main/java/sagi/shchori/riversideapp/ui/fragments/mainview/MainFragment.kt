@@ -45,12 +45,7 @@ class MainFragment : Fragment(), OnMovieClickListener {
         val recyclerView: RecyclerView = binding.recyclerView
 
         recyclerView.adapter = adapter
-
-        val snapHelper = LinearSnapHelper()
-        snapHelper.attachToRecyclerView(binding.recyclerView)
-
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
-        recyclerView.onFlingListener = snapHelper
 
         searchInput.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
@@ -83,10 +78,12 @@ class MainFragment : Fragment(), OnMovieClickListener {
     }
 
     override fun onMovieClicked(movie: Movie, position: Int) {
+        binding.recyclerView.smoothScrollToPosition(position)
+
         if (selectedItem > -1) {
-            binding.recyclerView[selectedItem].let {
-                it.scaleX = 1f
-                it.scaleY = 1f
+            binding.recyclerView.findViewHolderForAdapterPosition(selectedItem)?.let {
+                it.itemView.scaleX = 1f
+                it.itemView.scaleY = 1f
             }
         }
 
