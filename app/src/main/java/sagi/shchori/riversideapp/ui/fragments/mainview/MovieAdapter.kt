@@ -1,6 +1,7 @@
 package sagi.shchori.riversideapp.ui.fragments.mainview
 
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
@@ -14,6 +15,9 @@ class MovieAdapter @Inject constructor(private val listener: OnMovieClickListene
     RecyclerView.Adapter<MovieAdapter.MovieViewHolder>() {
 
     private var movies: List<Movie> = emptyList()
+
+    private var selectedView: View? = null
+    private var selectedPosition: Int = -1
 
     inner class MovieViewHolder(
         private val binding: ItemMovieBinding
@@ -61,12 +65,47 @@ class MovieAdapter @Inject constructor(private val listener: OnMovieClickListene
     override fun onBindViewHolder(holder: MovieViewHolder, position: Int) {
         val movie = movies[position]
         holder.bind(movie)
-        holder.itemView.scaleX = 1f
-        holder.itemView.scaleY = 1f
+        setScaleToListItem(movie.isSelected, holder.itemView)
+
+        // This is for first time after screen rotation
+        if (movie.isSelected && selectedView == null) {
+            selectedView = holder.itemView
+
+            selectedPosition = position
+        }
+
         holder.itemView.setOnClickListener {
-            it.scaleX = 1.2f
-            it.scaleY = 1.2f
+            movie.isSelected = true
+
+            setScaleToListItem(true, holder.itemView)
+
+            // If the selected item is different than before it need to reset its appearance
+            if (selectedView != it) {
+
+                // Only if previous item exist scale it to normal
+                selectedView?.let {     view ->
+                    setScaleToListItem(false, view)
+
+                    // reset the isSelected parameter to avoid UX issues
+                    movies[selectedPosition].isSelected = false
+                }
+
+                selectedView = it
+
+                selectedPosition = position
+            }
+
             listener.onMovieClicked(movie, position)
+        }
+    }
+
+    private fun setScaleToListItem(selected: Boolean, itemView: View) {
+        if (selected) {
+            itemView.scaleX = 1.2f
+            itemView.scaleY = 1.2f
+        } else {
+            itemView.scaleX = 1f
+            itemView.scaleY = 1f
         }
     }
 
@@ -74,6 +113,7 @@ class MovieAdapter @Inject constructor(private val listener: OnMovieClickListene
 
     fun updateMovies(movies: List<Movie>?) {
         this.movies = movies ?: emptyList()
+
         notifyDataSetChanged()
     }
 }

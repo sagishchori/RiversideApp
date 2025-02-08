@@ -7,16 +7,15 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
-import androidx.core.view.get
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.LinearSnapHelper
 import androidx.recyclerview.widget.RecyclerView
 import dagger.hilt.android.AndroidEntryPoint
+import sagi.shchori.riversideapp.databinding.FragmentMainBinding
+import sagi.shchori.riversideapp.extentions.smoothScrollItemToMiddle
 import sagi.shchori.riversideapp.ui.models.Movie
 import sagi.shchori.riversideapp.ui.viewmodels.MovieViewModel
-import sagi.shchori.riversideapp.databinding.FragmentMainBinding
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -28,7 +27,6 @@ class MainFragment : Fragment(), OnMovieClickListener {
     private val binding get() = _binding!!
 
     @Inject lateinit var adapter: MovieAdapter
-    private var selectedItem = -1
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -41,13 +39,10 @@ class MainFragment : Fragment(), OnMovieClickListener {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val searchInput: EditText = binding.searchInput
-        val recyclerView: RecyclerView = binding.recyclerView
+        binding.recyclerView.adapter = adapter
+        binding.recyclerView.layoutManager = LinearLayoutManager(requireContext())
 
-        recyclerView.adapter = adapter
-        recyclerView.layoutManager = LinearLayoutManager(requireContext())
-
-        searchInput.addTextChangedListener(object : TextWatcher {
+        binding.searchInput.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
                 viewModel.searchMovies(s.toString())
@@ -70,6 +65,12 @@ class MainFragment : Fragment(), OnMovieClickListener {
                 binding.searchInput.error = null
             }
         }
+
+        viewModel.selectedPosition.observe(viewLifecycleOwner) {
+
+            // Scroll the selected item to middle of screen
+            binding.recyclerView.smoothScrollItemToMiddle(it)
+        }
     }
 
     override fun onDestroyView() {
@@ -78,17 +79,11 @@ class MainFragment : Fragment(), OnMovieClickListener {
     }
 
     override fun onMovieClicked(movie: Movie, position: Int) {
-        binding.recyclerView.smoothScrollToPosition(position)
 
-        if (selectedItem > -1) {
-            binding.recyclerView.findViewHolderForAdapterPosition(selectedItem)?.let {
-                it.itemView.scaleX = 1f
-                it.itemView.scaleY = 1f
-            }
-        }
+        // First, set the selected item to scroll the RecyclerView to center
+        viewModel.setSelectedPosition(position)
 
-        selectedItem = position
-
+        // Then, set selection to movie
         viewModel.selectMovie(movie)
     }
 

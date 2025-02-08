@@ -68,8 +68,12 @@ class MovieRepository @Inject constructor(
                     }
 
                     list.forEach {  movie ->
+
+                        // Set for each item the query in order to fetch them later in case of no
+                        // network
                         movie.searchWord = query
 
+                        // Retain favorites
                         if (favoriteSet.contains(movie.imdbID)) {
                             movie.isFavorite = true
                         }

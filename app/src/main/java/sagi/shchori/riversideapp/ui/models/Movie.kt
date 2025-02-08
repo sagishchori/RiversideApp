@@ -33,4 +33,6 @@ data class Movie(
 
     @ColumnInfo("isFavorite")
     var isFavorite: Boolean = false
+
+    var isSelected = false
 }

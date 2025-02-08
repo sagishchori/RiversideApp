@@ -7,6 +7,7 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import sagi.shchori.riversideapp.network.Result
 import sagi.shchori.riversideapp.repositories.MovieRepository
@@ -27,6 +28,9 @@ class MovieViewModel @Inject constructor(
 
     private val _uiState = MutableLiveData<UiState<*>>()
     val uiState: LiveData<UiState<*>> = _uiState
+
+    private val _selectedPosition = MutableLiveData<Int>(-1)
+    val selectedPosition: LiveData<Int> get() = _selectedPosition
 
     /**
      * Search for a movie according to user input
@@ -57,6 +61,10 @@ class MovieViewModel @Inject constructor(
 
                     is Result.Success -> {
                         _uiState.postValue(UiState.IDLE)
+
+                        if (_selectedPosition.value!! > -1) {
+                            result.data.search[_selectedPosition.value!!].isSelected = true
+                        }
 
                         _movies.postValue(result.data.search)
                     }
@@ -109,12 +117,16 @@ class MovieViewModel @Inject constructor(
         movie?.let {
             viewModelScope.launch(Dispatchers.IO) {
 
+                // It is not mandatory, it just allow the user to experience the snapping to center
+                delay(1000)
+
                 // This will ensure loading the movie data first and then transfer the user to
                 // MovieDetailsFragment
                 movieDetails(movie!!)
             }
         }
 
+        // This resets the selected movie when a user go back to movies list
         _selectedMovie.value = null
     }
 
@@ -155,5 +167,12 @@ class MovieViewModel @Inject constructor(
                 repository.setMovieAsFavorite(selectedMovie.imdbID, !selectedMovie.isFavorite)
             }
         }
+    }
+
+    /**
+     * Set the RecyclerView's position of the selected item
+     */
+    fun setSelectedPosition(position: Int) {
+        _selectedPosition.postValue(position)
     }
 }
