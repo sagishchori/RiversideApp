@@ -22,11 +22,29 @@ class MovieAdapter @Inject constructor(private val listener: OnMovieClickListene
         fun bind(movie: Movie) {
             binding.movieTitle.text = movie.title
             binding.movieYear.text = movie.year
+            binding.favorite.setOnClickListener {
+                movie.isFavorite = !movie.isFavorite
+
+                setFavoriteImageResource(movie.isFavorite)
+
+                listener.onFavoriteClicked(movie.imdbID, movie.isFavorite)
+            }
+
             Glide.with(itemView.context)
                 .load(movie.poster)
                 .diskCacheStrategy(DiskCacheStrategy.RESOURCE)
                 .placeholder(R.drawable.ic_image_not_supported_100)
                 .into(binding.moviePoster)
+
+            setFavoriteImageResource(movie.isFavorite)
+        }
+
+        private fun setFavoriteImageResource(favorite: Boolean) {
+            if (favorite) {
+                binding.favorite.setImageResource(R.drawable.ic_favorite_24)
+            } else {
+                binding.favorite.setImageResource(R.drawable.ic_favorite_border_24)
+            }
         }
     }
 

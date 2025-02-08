@@ -107,16 +107,21 @@ class MovieViewModel @Inject constructor(
     }
 
     fun selectMovie(movie: Movie?) {
-        if (movie == null) {
-            _selectedMovie.value = null
-            return
+        movie?.let {
+            viewModelScope.launch(Dispatchers.IO) {
+
+                // This will ensure loading the movie data first and then transfer the user to
+                // MovieDetailsFragment
+                movieDetails(movie!!)
+            }
         }
 
-        viewModelScope.launch(Dispatchers.IO) {
+        _selectedMovie.value = null
+    }
 
-            // This will ensure loading the movie data first and then transfer the user to
-            // MovieDetailsFragment
-            movieDetails(movie!!)
+    fun setMovieAsFavorite(movieId: String, isFavorite: Boolean) {
+        viewModelScope.launch {
+            repository.setMovieAsFavorite(movieId, isFavorite)
         }
     }
 }

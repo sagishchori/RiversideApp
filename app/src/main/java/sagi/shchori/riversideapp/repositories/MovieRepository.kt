@@ -8,7 +8,6 @@ import sagi.shchori.riversideapp.network.OmdbApi
 import sagi.shchori.riversideapp.network.Result
 import sagi.shchori.riversideapp.ui.models.Movie
 import sagi.shchori.riversideapp.ui.models.MovieDetails
-import java.net.UnknownHostException
 import javax.inject.Inject
 
 class MovieRepository @Inject constructor(
@@ -24,9 +23,18 @@ class MovieRepository @Inject constructor(
     suspend fun searchMovies(query: String): Flow<Result<MovieResponse>> = flow {
         emit(Result.Loading)
 
+        val favoriteSet = hashSetOf<String>()
+
         // First, check in the DB for the search word
         val dbResult = movieDao.searchMovies(query)
         if (dbResult.isNotEmpty()) {
+
+            // Add the favorite movies to Set to check later
+            dbResult.forEach {
+                if (it.isFavorite) {
+                    favoriteSet.add(it.imdbID)
+                }
+            }
 
             // The DB is filled with movies save for the search word
             emit(Result.Success(MovieResponse(dbResult, "", "")))
@@ -53,8 +61,18 @@ class MovieRepository @Inject constructor(
             response.body()?.let {
 
                 it.search?.let {    list ->
+
+                    // If the lists are the same size no change in data -> return
+                    if (list.size == dbResult.size) {
+                        return@flow
+                    }
+
                     list.forEach {  movie ->
                         movie.searchWord = query
+
+                        if (favoriteSet.contains(movie.imdbID)) {
+                            movie.isFavorite = true
+                        }
                     }
 
                     // If the result is successful need to save the result to DB
@@ -128,5 +146,15 @@ class MovieRepository @Inject constructor(
                 emit(Result.Error(Exception(it.string())))
             }
         }
+    }
+
+    /**
+     * Set a favorite movie into DB.
+     */
+    suspend fun setMovieAsFavorite(movieId: String, isFavorite: Boolean) {
+        val dbResult = movieDao.searchMovie(movieId)
+        val movieFromDB = dbResult[0]
+        movieFromDB.isFavorite = isFavorite
+        movieDao.insertMovie(movieFromDB)
     }
 }

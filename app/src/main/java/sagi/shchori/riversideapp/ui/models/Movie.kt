@@ -30,4 +30,7 @@ data class Movie(
     @ColumnInfo("movieDetails")
     @Nullable
     var movieDetails: MovieDetails? = null
+
+    @ColumnInfo("isFavorite")
+    var isFavorite: Boolean = false
 }

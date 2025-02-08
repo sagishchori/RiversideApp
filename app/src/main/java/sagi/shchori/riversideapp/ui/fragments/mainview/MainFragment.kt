@@ -92,4 +92,8 @@ class MainFragment : Fragment(), OnMovieClickListener {
 
         viewModel.selectMovie(movie)
     }
+
+    override fun onFavoriteClicked(movieId: String, isFavorite: Boolean) {
+        viewModel.setMovieAsFavorite(movieId, isFavorite)
+    }
 }
