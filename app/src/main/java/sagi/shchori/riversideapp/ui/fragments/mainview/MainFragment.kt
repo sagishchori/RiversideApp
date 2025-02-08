@@ -45,10 +45,12 @@ class MainFragment : Fragment(), OnMovieClickListener {
         val recyclerView: RecyclerView = binding.recyclerView
 
         recyclerView.adapter = adapter
-        recyclerView.layoutManager = LinearLayoutManager(requireContext())
 
         val snapHelper = LinearSnapHelper()
         snapHelper.attachToRecyclerView(binding.recyclerView)
+
+        recyclerView.layoutManager = LinearLayoutManager(requireContext())
+        recyclerView.onFlingListener = snapHelper
 
         searchInput.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
