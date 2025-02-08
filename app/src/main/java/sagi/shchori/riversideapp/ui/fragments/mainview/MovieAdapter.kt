@@ -2,7 +2,6 @@ package sagi.shchori.riversideapp.ui.fragments.mainview
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
@@ -44,8 +43,12 @@ class MovieAdapter @Inject constructor(private val listener: OnMovieClickListene
     override fun onBindViewHolder(holder: MovieViewHolder, position: Int) {
         val movie = movies[position]
         holder.bind(movie)
+        holder.itemView.scaleX = 1f
+        holder.itemView.scaleY = 1f
         holder.itemView.setOnClickListener {
-            listener.onMovieClicked(movie)
+            it.scaleX = 1.2f
+            it.scaleY = 1.2f
+            listener.onMovieClicked(movie, position)
         }
     }
 

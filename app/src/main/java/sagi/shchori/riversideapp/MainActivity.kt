@@ -27,14 +27,34 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         supportFragmentManager.commit {
+
+            // In case of a screen rotation the fragment should be in the backstack so no need to
+            // set it again to the View
+            supportFragmentManager.findFragmentByTag("MainFragment")?.let {
+                return@commit
+            }
+
             setReorderingAllowed(true)
-            add(R.id.container, MainFragment())
+            replace(R.id.container, MainFragment(), "MainFragment")
             addToBackStack("MainFragment")
         }
 
-        viewModel.selectedMovie.observe(this) { movie ->
+        viewModel.selectedMovie.observe(this) {
+
             supportFragmentManager.commit {
-                add(R.id.container, MovieDetailsFragment())
+
+                // In case of a screen rotation the fragment should be in the backstack so no need to
+                // set it again to the View
+                supportFragmentManager.findFragmentByTag("DetailsFragment")?.let {
+                    return@commit
+                }
+
+                // This is in the case of resetting the selected movie
+                if (it == null) {
+                    return@commit
+                }
+
+                add(R.id.container, MovieDetailsFragment(), "DetailsFragment")
                 addToBackStack("DetailsFragment")
             }
         }
@@ -67,6 +87,9 @@ class MainActivity : AppCompatActivity() {
                 override fun handleOnBackPressed() {
                     if (supportFragmentManager.backStackEntryCount > 1) {
                         supportFragmentManager.popBackStack()
+
+                        // This will reset the selection each time the user goes out to the list
+                        viewModel.selectMovie(null)
                     } else {
                         finish()
                     }

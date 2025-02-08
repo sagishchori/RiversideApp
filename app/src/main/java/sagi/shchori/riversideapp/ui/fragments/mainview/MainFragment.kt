@@ -7,15 +7,16 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
+import androidx.core.view.get
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.LinearSnapHelper
 import androidx.recyclerview.widget.RecyclerView
 import dagger.hilt.android.AndroidEntryPoint
 import sagi.shchori.riversideapp.ui.models.Movie
 import sagi.shchori.riversideapp.ui.viewmodels.MovieViewModel
 import sagi.shchori.riversideapp.databinding.FragmentMainBinding
-import sagi.shchori.riversideapp.ui.UiState
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -27,6 +28,7 @@ class MainFragment : Fragment(), OnMovieClickListener {
     private val binding get() = _binding!!
 
     @Inject lateinit var adapter: MovieAdapter
+    private var selectedItem = -1
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -44,6 +46,9 @@ class MainFragment : Fragment(), OnMovieClickListener {
 
         recyclerView.adapter = adapter
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
+
+        val snapHelper = LinearSnapHelper()
+        snapHelper.attachToRecyclerView(binding.recyclerView)
 
         searchInput.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
@@ -75,7 +80,16 @@ class MainFragment : Fragment(), OnMovieClickListener {
         _binding = null
     }
 
-    override fun onMovieClicked(movie: Movie) {
+    override fun onMovieClicked(movie: Movie, position: Int) {
+        if (selectedItem > -1) {
+            binding.recyclerView[selectedItem].let {
+                it.scaleX = 1f
+                it.scaleY = 1f
+            }
+        }
+
+        selectedItem = position
+
         viewModel.selectMovie(movie)
     }
 }

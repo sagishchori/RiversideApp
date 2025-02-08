@@ -106,12 +106,17 @@ class MovieViewModel @Inject constructor(
         }
     }
 
-    fun selectMovie(movie: Movie) {
+    fun selectMovie(movie: Movie?) {
+        if (movie == null) {
+            _selectedMovie.value = null
+            return
+        }
+
         viewModelScope.launch(Dispatchers.IO) {
 
             // This will ensure loading the movie data first and then transfer the user to
             // MovieDetailsFragment
-            movieDetails(movie)
+            movieDetails(movie!!)
         }
     }
 }
