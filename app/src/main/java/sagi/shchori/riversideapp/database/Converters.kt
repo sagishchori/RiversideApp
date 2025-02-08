@@ -24,8 +24,12 @@ class Converters {
     }
 
     @TypeConverter
-    fun movieDetailsClassFromString(json: String): MovieDetails {
-        return Gson().fromJson(json, MovieDetails::class.java)
+    fun movieDetailsClassFromString(json: String): MovieDetails? {
+        return try {
+            Gson().fromJson(json, MovieDetails::class.java)
+        } catch (ex: Exception) {
+            null
+        }
     }
 
     @TypeConverter
