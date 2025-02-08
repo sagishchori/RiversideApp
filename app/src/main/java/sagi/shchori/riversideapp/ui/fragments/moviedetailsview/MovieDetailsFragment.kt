@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import dagger.hilt.android.AndroidEntryPoint
+import sagi.shchori.riversideapp.R
 import sagi.shchori.riversideapp.ui.viewmodels.MovieViewModel
 import sagi.shchori.riversideapp.databinding.FragmentMovieDetailsBinding
 
@@ -31,10 +32,33 @@ class MovieDetailsFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        var isFavoriteOn = false
+
         viewModel.selectedMovie.observe(viewLifecycleOwner) { movie ->
             binding.movieTitle.text = movie?.title
             binding.movieYear.text = movie?.year
             binding.moviePlot.text = movie?.movieDetails?.plot
+
+            isFavoriteOn = movie?.isFavorite ?: false
+
+            setFavoriteImageResource(isFavoriteOn)
+        }
+
+
+        binding.favorite.setOnClickListener {
+            viewModel.addOrRemoveMovieAsFavorite()
+
+            isFavoriteOn = !isFavoriteOn
+
+            setFavoriteImageResource(isFavoriteOn)
+        }
+    }
+
+    private fun setFavoriteImageResource(favorite: Boolean) {
+        if (favorite) {
+            binding.favorite.setImageResource(R.drawable.ic_favorite_24)
+        } else {
+            binding.favorite.setImageResource(R.drawable.ic_favorite_border_24)
         }
     }
 

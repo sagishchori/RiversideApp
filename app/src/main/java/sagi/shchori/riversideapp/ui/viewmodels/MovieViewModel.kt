@@ -49,7 +49,6 @@ class MovieViewModel @Inject constructor(
                 when(result) {
                     is Result.Error -> {
                         _uiState.postValue(UiState.ERROR(result.exception.message))
-//                        "Something went wrong when trying to load the movies list"
                     }
 
                     Result.Loading -> {
@@ -119,9 +118,42 @@ class MovieViewModel @Inject constructor(
         _selectedMovie.value = null
     }
 
+    /**
+     * This function is being called from the main view since the user sets a movie as favorite from
+     * the list. It also creates separation from movie details view.
+     */
     fun setMovieAsFavorite(movieId: String, isFavorite: Boolean) {
         viewModelScope.launch {
             repository.setMovieAsFavorite(movieId, isFavorite)
+        }
+    }
+
+    /**
+     * This function is being called from the movie details view because when a user enters this
+     * view and click on favorite he adds it to its favorite list. It also creates a separation from
+     * setting favorite from the main view.
+     */
+    fun addOrRemoveMovieAsFavorite() {
+        viewModelScope.launch {
+
+            _selectedMovie.value?.let { selectedMovie ->
+
+                _movies.value?.forEach {    movieFromList ->
+
+                    // Search for the selected movie in the movie list to change the isFavorite
+                    // value
+                    if (movieFromList.imdbID == selectedMovie.imdbID) {
+                        movieFromList.isFavorite = !selectedMovie.isFavorite
+
+                        _movies.postValue(_movies.value)
+
+                        // Once it was found -> break
+                        return@forEach
+                    }
+                }
+
+                repository.setMovieAsFavorite(selectedMovie.imdbID, !selectedMovie.isFavorite)
+            }
         }
     }
 }
