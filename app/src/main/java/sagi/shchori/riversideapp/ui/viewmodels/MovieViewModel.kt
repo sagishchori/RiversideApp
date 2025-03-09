@@ -114,7 +114,7 @@ class MovieViewModel @Inject constructor(
     }
 
     fun selectMovie(movie: Movie?) {
-        movie?.let {
+        movie?.let { mov ->
             viewModelScope.launch(Dispatchers.IO) {
 
                 // It is not mandatory, it just allow the user to experience the snapping to center
@@ -122,7 +122,7 @@ class MovieViewModel @Inject constructor(
 
                 // This will ensure loading the movie data first and then transfer the user to
                 // MovieDetailsFragment
-                movieDetails(movie!!)
+                movieDetails(mov)
             }
         }
 
